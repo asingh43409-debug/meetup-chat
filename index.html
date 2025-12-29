@@ -211,23 +211,26 @@ body {
   <button class="refresh" onclick="location.reload()">🔄</button>
 </div>
 
-  <div class="chat-header">
+ <div class="chat-header">
   <div class="header-left">
     <div class="header-bunny">
-  <lottie-player
-    src="bunny.json"
-    background="transparent"
-    speed="0.6"
-    style="width:34px;height:34px"
-    autoplay
-    loop>
-  </lottie-player>
-</div>
+      <lottie-player
+        src="bunny.json"
+        background="transparent"
+        speed="0.6"
+        style="width:34px;height:34px"
+        autoplay
+        loop>
+      </lottie-player>
+    </div>
+
     <div class="header-text">
       <div class="header-name">Bunny</div>
       <div class="header-sub">Meetup Chat · here with you</div>
     </div>
   </div>
+
+  <button class="refresh-btn" onclick="location.reload()">🔄</button>
 </div>
 
 <div id="chat"></div>
@@ -499,6 +502,7 @@ function choosePlatform() {
 
 </body>
 </html>
+
 
 
 
