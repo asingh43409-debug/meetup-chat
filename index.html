@@ -167,6 +167,16 @@ body {
   font-size: 12px;
   color: #555;
 }
+.header-bunny {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(255,255,255,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 </style>
 
@@ -180,7 +190,16 @@ body {
 
   <div class="chat-header">
   <div class="header-left">
-    <div class="header-bunny">🐰</div>
+    <div class="header-bunny">
+  <lottie-player
+    src="bunny.json"
+    background="transparent"
+    speed="0.6"
+    style="width:34px;height:34px"
+    autoplay
+    loop>
+  </lottie-player>
+</div>
     <div class="header-text">
       <div class="header-name">Bunny</div>
       <div class="header-sub">Meetup Chat · here with you</div>
@@ -457,5 +476,6 @@ function choosePlatform() {
 
 </body>
 </html>
+
 
 
