@@ -265,45 +265,158 @@ function skipContact() {
 }
 
 /* SCRIPT START */
-bot("Hi there… this might feel a little unexpected.");
-replies([
-  {
-    text: "Yeah 😅",
-    next: () => {
-      bot("That makes sense. New moments often feel like that.");
-      replies([
-        {
-          text: "True",
-          next: () => {
-            bot("How are you feeling right now?");
-            replies([
-              { text: "Comfortable", next: () => nextStep() },
-              { text: "A bit nervous", next: () => nextStep() },
-              { text: "Just curious", next: () => nextStep() }
-            ]);
-          }
-        }
-      ]);
-    }
-  }
+/* SCRIPT START */
+
+// Helper to ask with buttons
+function ask(text, options) {
+  bot(text);
+  replies(options);
+}
+
+// START
+ask("Hey 😊", [
+  { text: "Hello 👋", next: stepRandom },
+  { text: "Hii 😄", next: stepRandom }
 ]);
 
-function nextStep() {
-  bot("This actually feels nice.");
-  replies([
-    {
-      text: "Yeah it does",
-      next: () => {
-        bot("Should we continue this somewhere easier?");
-        replies([
-          { text: "Instagram", next: () => contactInput("Instagram") },
-          { text: "WhatsApp", next: () => contactInput("WhatsApp") }
-        ]);
-      }
-    }
+function stepRandom() {
+  ask("This might feel a little random…", [
+    { text: "Yeah", next: stepFeeling },
+    { text: "I’m listening", next: stepFeeling }
+  ]);
+}
+
+function stepFeeling() {
+  ask("Before anything else — how are you feeling right now?", [
+    { text: "Pretty good", next: feelingGood },
+    { text: "A bit nervous", next: feelingNervous },
+    { text: "Just curious", next: feelingCurious }
+  ]);
+}
+
+// FEELING REPLIES
+function feelingGood() {
+  bot("Very nice 😊");
+  stepName();
+}
+
+function feelingNervous() {
+  bot("Don’t be nervous, I’m right here with you 😉");
+  stepName();
+}
+
+function feelingCurious() {
+  bot("That’s nice 🙂");
+  stepName();
+}
+
+// NAME
+function stepName() {
+  bot("By the way, I’m Abhi.\nWhat’s your good name?");
+  setTimeout(() => {
+    const box = document.createElement("div");
+    box.className = "input-box";
+    box.innerHTML = `
+      <input id="nameField" placeholder="Type your name">
+      <div class="reply-wrap" style="margin-top:10px">
+        <button class="reply" onclick="submitName()">Submit</button>
+        <button class="reply" style="background:#eee;color:#555;box-shadow:none"
+          onclick="skipName()">I’d rather not say</button>
+      </div>
+    `;
+    chat.appendChild(box);
+    chat.scrollTop = chat.scrollHeight;
+  }, 500);
+}
+
+function submitName() {
+  const val = document.getElementById("nameField").value.trim();
+  if (!val) return;
+  document.querySelector(".input-box").remove();
+  user(val);
+  bot("That’s a very beautiful name 😊");
+  stepPlace();
+}
+
+function skipName() {
+  document.querySelector(".input-box").remove();
+  bot("That’s totally fine, no pressure at all.");
+  stepPlace();
+}
+
+// PLACE
+function stepPlace() {
+  bot("Where are you living right now?");
+  setTimeout(() => {
+    const box = document.createElement("div");
+    box.className = "input-box";
+    box.innerHTML = `
+      <input id="placeField" placeholder="Your city / place">
+      <div class="reply-wrap" style="margin-top:10px">
+        <button class="reply" onclick="submitPlace()">Submit</button>
+        <button class="reply" style="background:#eee;color:#555;box-shadow:none"
+          onclick="skipPlace()">I don’t want to tell</button>
+      </div>
+    `;
+    chat.appendChild(box);
+    chat.scrollTop = chat.scrollHeight;
+  }, 500);
+}
+
+function submitPlace() {
+  const val = document.getElementById("placeField").value.trim();
+  if (!val) return;
+  document.querySelector(".input-box").remove();
+  user(val);
+  bot("Nice 🙂");
+  stepDay();
+}
+
+function skipPlace() {
+  document.querySelector(".input-box").remove();
+  bot("That’s okay.");
+  stepDay();
+}
+
+// DAY
+function stepDay() {
+  ask("What kind of day has it been so far?", [
+    { text: "It’s good", next: dayGood },
+    { text: "It’s normal", next: dayNormal },
+    { text: "It’s bad", next: dayBad }
+  ]);
+}
+
+function dayGood() {
+  bot("That’s good 😊\nWe just met — maybe that makes it even better.");
+  stepContinue();
+}
+
+function dayNormal() {
+  bot("Normal days are fine too.\nMaybe I can help make it a little better 🙂");
+  stepContinue();
+}
+
+function dayBad() {
+  bot("Oh… that’s not nice.\nI’ll try to make it a better day for you from now on.");
+  stepContinue();
+}
+
+// CONTINUE
+function stepContinue() {
+  ask("Should we continue this somewhere else?", [
+    { text: "Sure", next: choosePlatform }
+  ]);
+}
+
+function choosePlatform() {
+  ask("Where would you like to continue?", [
+    { text: "Instagram", next: () => contactInput("Instagram") },
+    { text: "WhatsApp", next: () => contactInput("WhatsApp") }
   ]);
 }
 </script>
 
 </body>
 </html>
+
