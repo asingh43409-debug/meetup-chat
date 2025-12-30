@@ -287,32 +287,23 @@ function showButtons(options, callback) {
 
 let typingEl = null;
 
-function showTyping() {
-  typingEl = document.createElement("div");
-  typingEl.className = "msg bot typing";
+let typingBubble = null;
 
-  typingEl.innerHTML = `
+function showTyping() {
+  typingBubble = document.createElement("div");
+  typingBubble.className = "msg bot typing";
+  typingBubble.innerHTML = `
     <span></span><span></span><span></span>
   `;
-
-  chat.appendChild(typingEl);
+  chat.appendChild(typingBubble);
   scrollChat();
 }
 
 function hideTyping() {
-  if (typingEl) {
-    typingEl.remove();
-    typingEl = null;
+  if (typingBubble) {
+    typingBubble.remove();
+    typingBubble = null;
   }
-}
-
-function showTyping() {
-  document.getElementById("typing").classList.remove("hidden");
-  scrollChat();
-}
-
-function hideTyping() {
-  document.getElementById("typing").classList.add("hidden");
 }
 
 function botTyping(delay = 1500) {
@@ -324,6 +315,7 @@ function botTyping(delay = 1500) {
     }, delay);
   });
 }
+
 function askInput(placeholder, callback) {
   const wrap = document.createElement("div");
   wrap.className = "msg user input-box";
@@ -584,6 +576,7 @@ async function endChat() {
 
 </body>
 </html>
+
 
 
 
