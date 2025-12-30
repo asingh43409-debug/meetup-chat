@@ -254,9 +254,6 @@ body {
     </lottie-player>
   </div>
 </div> 
-<div id="typing" class="typing hidden">
-  <span></span><span></span><span></span>
-</div>
 
 <script>
 
@@ -288,6 +285,27 @@ function showButtons(options, callback) {
   scrollChat();
 }
 
+let typingEl = null;
+
+function showTyping() {
+  typingEl = document.createElement("div");
+  typingEl.className = "msg bot typing";
+
+  typingEl.innerHTML = `
+    <span></span><span></span><span></span>
+  `;
+
+  chat.appendChild(typingEl);
+  scrollChat();
+}
+
+function hideTyping() {
+  if (typingEl) {
+    typingEl.remove();
+    typingEl = null;
+  }
+}
+
 function showTyping() {
   document.getElementById("typing").classList.remove("hidden");
   scrollChat();
@@ -297,7 +315,7 @@ function hideTyping() {
   document.getElementById("typing").classList.add("hidden");
 }
 
-function botTyping(delay = 900) {
+function botTyping(delay = 1500) {
   return new Promise(resolve => {
     showTyping();
     setTimeout(() => {
@@ -307,29 +325,23 @@ function botTyping(delay = 900) {
   });
 }
 function askInput(placeholder, callback) {
-  const chat = document.getElementById("chat");
-
-  const wrapper = document.createElement("div");
-  wrapper.className = "input-wrap";
+  const wrap = document.createElement("div");
+  wrap.className = "msg user input-box";
 
   const input = document.createElement("input");
-  input.type = "text";
   input.placeholder = placeholder;
 
-  const btn = document.createElement("button");
-  btn.innerText = "Send";
-
-  btn.onclick = () => {
-    if (!input.value.trim()) return;
-    user(input.value);
-    callback(input.value.trim());
-    wrapper.remove();
-    scrollChat();
+  input.onkeydown = e => {
+    if (e.key === "Enter" && input.value.trim()) {
+      const val = input.value.trim();
+      wrap.remove();
+      user(val);
+      callback(val);
+    }
   };
 
-  wrapper.appendChild(input);
-  wrapper.appendChild(btn);
-  chat.appendChild(wrapper);
+  wrap.appendChild(input);
+  chat.appendChild(wrap);
   scrollChat();
 }
 
@@ -401,24 +413,24 @@ async function feelingResponse(choice) {
 async function askName() {
   await bot("By the way, I’m Abhi.");
   await bot("What should I call you?");
-  showButtons(
-    ["Skip"],
-    () => {
-      bot("No worries 😄");
-      bot("We can keep it simple.");
-      askTrustLine();
-    },
-    () => {
-      askInput("Write your name here", val => {
-        userName = val;
-        skipped.name = false;
-        bot("Oh… that’s a nice name ✨");
-        bot("It suits you.");
-        askTrustLine();
-      });
-    }
-  );
+
+  askInput("Write your name here", val => {
+    userName = val;
+    skipped.name = false;
+    bot("Oh… that’s a nice name ✨");
+    bot("It suits you.");
+    askTrustLine();
+  });
+
+  showButtons(["Skip"], () => {
+    skipped.name = true;
+    user("Skip");
+    bot("No worries 😄");
+    bot("We can keep it simple.");
+    askTrustLine();
+  });
 }
+
 
 async function askTrustLine() {
   await bot("By the way —");
@@ -572,6 +584,7 @@ async function endChat() {
 
 </body>
 </html>
+
 
 
 
