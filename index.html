@@ -284,11 +284,21 @@ function replies(list) {
 function contactInput(type) {
   bot(`If you feel comfortable, we can continue this on ${type}.`);
 
+  let placeholderText = "Type here…";
+
+  if (type === "Instagram") {
+    placeholderText = "Write your Instagram ID";
+  }
+
+  if (type === "WhatsApp") {
+    placeholderText = "Write your WhatsApp number";
+  }
+
   setTimeout(() => {
     const box = document.createElement("div");
     box.className = "input-box";
     box.innerHTML = `
-      <input id="contactField" placeholder="Type here… (only if you want)">
+      <input id="contactField" placeholder="${placeholderText}">
       <div class="reply-wrap" style="margin-top:10px">
         <button class="reply" onclick="submitContact()">Continue</button>
         <button class="reply" style="background:#eee;color:#555;box-shadow:none"
@@ -554,6 +564,7 @@ function stepPlatform() {
 
 </body>
 </html>
+
 
 
 
