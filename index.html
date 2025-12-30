@@ -112,7 +112,7 @@ body {
   width: 100%;
   display: flex;
   justify-content: center;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .bunny-panel img {
@@ -231,6 +231,23 @@ body {
 
 <script>
 const chat = document.getElementById("chat");
+
+const bunny = document.getElementById("bunny");
+
+function bunnyReact() {
+  // Speed up animation
+  bunny.setSpeed(1.6);
+  bunny.play();
+
+  // Small cute bounce
+  bunny.style.transform = "scale(1.05)";
+
+  setTimeout(() => {
+    bunny.setSpeed(1);
+    bunny.style.transform = "scale(1)";
+  }, 600);
+}
+bunny.addEventListener("pointerdown", bunnyReact);
 
 function bot(text) {
   const d = document.createElement("div");
@@ -564,6 +581,7 @@ function stepPlatform() {
 
 </body>
 </html>
+
 
 
 
