@@ -376,6 +376,26 @@ function user(text) {
   chat.scrollTop = chat.scrollHeight;
 }
 
+function waitForGesture(label, emoji, next) {
+  const wrap = document.createElement("div");
+  wrap.className = "reply-wrap";
+
+  const btn = document.createElement("button");
+  btn.className = "reply";
+  btn.innerText = `${emoji} ${label}`;
+
+  btn.onclick = () => {
+    wrap.remove();
+    user(label);
+    next();
+  };
+
+  wrap.appendChild(btn);
+  chat.appendChild(wrap);
+  scrollChat();
+}
+
+
 function scrollChat() {
   chat.scrollTop = chat.scrollHeight;
 }
@@ -606,6 +626,7 @@ function askContact(app) {
 
 </body>
 </html>
+
 
 
 
