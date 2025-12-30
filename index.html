@@ -184,6 +184,32 @@ body {
 .refresh-btn:active {
   transform: scale(0.92);
 }
+.typing {
+  display: flex;
+  gap: 4px;
+  margin: 8px 0;
+}
+
+.typing span {
+  width: 6px;
+  height: 6px;
+  background: #999;
+  border-radius: 50%;
+  animation: blink 1.4s infinite both;
+}
+
+.typing span:nth-child(2) { animation-delay: .2s; }
+.typing span:nth-child(3) { animation-delay: .4s; }
+
+.hidden {
+  display: none;
+}
+
+@keyframes blink {
+  0% { opacity: .2; }
+  20% { opacity: 1; }
+  100% { opacity: .2; }
+}
 
 </style>
 
@@ -227,19 +253,96 @@ body {
       style="height: 20vh;">
     </lottie-player>
   </div>
+</div> 
+<div id="typing" class="typing hidden">
+  <span></span><span></span><span></span>
 </div>
 
 <script>
-const chat = document.getElementById("chat");
 
-function bot(text) {
-  const d = document.createElement("div");
-  d.className = "msg bot";
-  d.textContent = text;
-  chat.appendChild(d);
-  chat.scrollTop = chat.scrollHeight;
+let userName = "";
+let userPlace = "";
+let skipped = {
+  name: true,
+  place: true
+};
+
+function showTyping() {
+  document.getElementById("typing").classList.remove("hidden");
+  scrollChat();
 }
 
+function hideTyping() {
+  document.getElementById("typing").classList.add("hidden");
+}
+
+function botTyping(delay = 900) {
+  return new Promise(resolve => {
+    showTyping();
+    setTimeout(() => {
+      hideTyping();
+      resolve();
+    }, delay);
+  });
+}
+function askInput(placeholder, callback) {
+  const chat = document.getElementById("chat");
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "input-wrap";
+
+  const input = document.createElement("input");
+  input.type = "text";
+  input.placeholder = placeholder;
+
+  const btn = document.createElement("button");
+  btn.innerText = "Send";
+
+  btn.onclick = () => {
+    if (!input.value.trim()) return;
+    chat.appendChild(userMsg(input.value));
+    callback(input.value.trim());
+    wrapper.remove();
+    scrollChat();
+  };
+
+  wrapper.appendChild(input);
+  wrapper.appendChild(btn);
+  chat.appendChild(wrapper);
+  scrollChat();
+}
+
+function showTyping() {
+  document.getElementById("typing").classList.remove("hidden");
+  scrollChat();
+}
+
+function hideTyping() {
+  document.getElementById("typing").classList.add("hidden");
+}
+
+function botTyping(delay = 900) {
+  return new Promise(resolve => {
+    showTyping();
+    setTimeout(() => {
+      hideTyping();
+      resolve();
+    }, delay);
+  });
+}
+
+const chat = document.getElementById("chat");
+
+async function bot(text) {
+  await botTyping();
+  const chat = document.getElementById("chat");
+  const msg = document.createElement("div");
+  msg.className = "bot-msg";
+  msg.innerText = text;
+  chat.appendChild(msg);
+  scrollChat();
+}
+  
 function user(text) {
   const d = document.createElement("div");
   d.className = "msg user";
@@ -331,157 +434,217 @@ function skipContact() {
 /* SCRIPT START */
 
 // Helper to ask with buttons
-function ask(text, options) {
-  bot(text);
-  replies(options);
+async function startChat() {
+  await bot("Hey ✨");
+  await bot("Hi there 😄");
+  showButtons(["Hi", "Hello"], () => intro1());
 }
 
-// START
-ask("Hey 😊", [
-  { text: "Hello 👋", next: stepRandom },
-  { text: "Hii 😄", next: stepRandom }
-]);
-
-function stepRandom() {
-  ask("This might feel a little random…", [
-    { text: "Yeah", next: stepFeeling },
-    { text: "I’m listening", next: stepFeeling }
-  ]);
+async function intro1() {
+  await bot("Okay… this might feel a little random 😉");
+  await bot("But don’t worry — nothing awkward here.");
+  showButtons(["Alright", "Go on"], () => moodCheck());
 }
 
-function stepFeeling() {
-  ask("Before anything else — how are you feeling right now?", [
-    { text: "Pretty good", next: feelingGood },
-    { text: "A bit nervous", next: feelingNervous },
-    { text: "Just curious", next: feelingCurious }
-  ]);
+async function moodCheck() {
+  await bot("How are you feeling right now?");
+  showButtons(
+    ["Pretty good", "Little nervous", "Just bored"],
+    feelingResponse
+  );
 }
 
-// FEELING REPLIES
-function feelingGood() {
-  bot("Very nice 😊");
-  stepName();
+async function feelingResponse(choice) {
+  if (choice === "Pretty good") {
+    await bot("Nice 😄");
+    await bot("Good moods look good on people.");
+  }
+  if (choice === "Little nervous") {
+    await bot("That’s normal.");
+    await bot("New conversations do that 😉 Relax — this one’s easy.");
+  }
+  if (choice === "Just bored") {
+    await bot("Ahh okay 😄");
+    await bot("Let’s see if we can change that.");
+  }
+  askName();
 }
 
-function feelingNervous() {
-  bot("Don’t be nervous, I’m right here with you 😉");
-  stepName();
+async function askName() {
+  await bot("By the way, I’m Abhi.");
+  await bot("What should I call you?");
+  showButtons(
+    ["Skip"],
+    () => {
+      bot("No worries 😄");
+      bot("We can keep it simple.");
+      askTrustLine();
+    },
+    () => {
+      askInput("Write your name here", val => {
+        userName = val;
+        skipped.name = false;
+        bot("Oh… that’s a nice name ✨");
+        bot("It suits you.");
+        askTrustLine();
+      });
+    }
+  );
 }
 
-function feelingCurious() {
-  bot("That’s nice 🙂");
-  stepName();
+async function askTrustLine() {
+  await bot("By the way —");
+  await bot("this chat stays right here.");
+  askPlace();
 }
 
-// NAME
-function stepName() {
-  bot("By the way, I’m Abhi.\nWhat’s your good name?");
-  setTimeout(() => {
-    const box = document.createElement("div");
-    box.className = "input-box";
-    box.innerHTML = `
-      <input id="nameField" placeholder="Type your name">
-      <div class="reply-wrap" style="margin-top:10px">
-        <button class="reply" onclick="submitName()">Submit</button>
-        <button class="reply" style="background:#eee;color:#555;box-shadow:none"
-          onclick="skipName()">I’d rather not say</button>
-      </div>
-    `;
-    chat.appendChild(box);
-    chat.scrollTop = chat.scrollHeight;
-  }, 500);
+async function askPlace() {
+  await bot("Are you from around here?");
+  showButtons(["Yes", "No", "Skip"], async choice => {
+    if (choice === "Yes") {
+      await bot("Nice 😄");
+      askInput("Write your address / place here", val => {
+        userPlace = val;
+        skipped.place = false;
+        bot("Got it 😉");
+        funPersonality();
+      });
+    }
+    if (choice === "No") {
+      await bot("Oh okay 🙂");
+      await bot("Actually, where are you from?");
+      askInput("Write your place here", val => {
+        userPlace = val;
+        skipped.place = false;
+        bot("Got it 😉");
+        funPersonality();
+      });
+    }
+    if (choice === "Skip") {
+      bot("That’s okay.");
+      funPersonality();
+    }
+  });
 }
 
-function submitName() {
-  const val = document.getElementById("nameField").value.trim();
-  if (!val) return;
-  document.querySelector(".input-box").remove();
-  user(val);
-  bot("That’s a very beautiful name 😊");
-  stepPlace();
+async function funPersonality() {
+  await bot("Tell me something 😄");
+  await bot("Are you more of a chill person or fun chaos type?");
+  showButtons(
+    ["Chill", "Fun chaos", "Somewhere in between"],
+    async choice => {
+      if (choice === "Chill") {
+        await bot("I had a feeling 😌");
+        await bot("Calm vibes suit you.");
+      }
+      if (choice === "Fun chaos") {
+        await bot("Haha okay 😄");
+        await bot("That explains the energy.");
+      }
+      if (choice === "Somewhere in between") {
+        await bot("Best combo honestly ✨");
+      }
+      dayCheck();
+    }
+  );
 }
 
-function skipName() {
-  document.querySelector(".input-box").remove();
-  bot("That’s totally fine, no pressure at all.");
-  stepPlace();
+async function dayCheck() {
+  await bot("How’s your day been so far?");
+  showButtons(["Good", "Normal", "Kinda bad"], async choice => {
+    if (choice === "Good") {
+      await bot("Nice 😄");
+      await bot("Good days deserve good conversations.");
+    }
+    if (choice === "Normal") {
+      await bot("Normal days are underrated.");
+      await bot("They just need one fun moment.");
+    }
+    if (choice === "Kinda bad") {
+      await bot("Hmm okay.");
+      await bot("Then maybe this chat can be a small upgrade 🫶");
+    }
+    askAgainIfSkipped();
+  });
 }
 
-// PLACE
-function stepPlace() {
-  bot("Where are you living right now?");
-  setTimeout(() => {
-    const box = document.createElement("div");
-    box.className = "input-box";
-    box.innerHTML = `
-      <input id="placeField" placeholder="Your city / place">
-      <div class="reply-wrap" style="margin-top:10px">
-        <button class="reply" onclick="submitPlace()">Submit</button>
-        <button class="reply" style="background:#eee;color:#555;box-shadow:none"
-          onclick="skipPlace()">I don’t want to tell</button>
-      </div>
-    `;
-    chat.appendChild(box);
-    chat.scrollTop = chat.scrollHeight;
-  }, 500);
+async function askAgainIfSkipped() {
+  if (skipped.name || skipped.place) {
+    await bot("If you feel comfortable now, you can share your name or location.");
+    showButtons(["Share now", "Skip"], choice => {
+      if (choice === "Share now") {
+        if (skipped.name) {
+          askInput("Write your name here", val => {
+            userName = val;
+            skipped.name = false;
+            bot("Nice 😄");
+            flirtLine();
+          });
+        } else if (skipped.place) {
+          askInput("Write your place here", val => {
+            userPlace = val;
+            skipped.place = false;
+            bot("Got it 😉");
+            flirtLine();
+          });
+        }
+      } else {
+        bot("All good ✨");
+        bot("I respect that.");
+        flirtLine();
+      }
+    });
+  } else {
+    flirtLine();
+  }
 }
 
-function submitPlace() {
-  const val = document.getElementById("placeField").value.trim();
-  if (!val) return;
-  document.querySelector(".input-box").remove();
-  user(val);
-  bot("Nice 🙂");
-  stepDay();
+async function flirtLine() {
+  await bot("Can I say something honestly?");
+  await bot("You seem confident — even when you’re being quiet 😉");
+  transitionOut();
 }
 
-function skipPlace() {
-  document.querySelector(".input-box").remove();
-  bot("That’s okay.");
-  stepDay();
+async function transitionOut() {
+  await bot("I like chatting with you 😄");
+  await bot("Should we continue this somewhere else?");
+  showButtons(["Okay", "Maybe later"], choice => {
+    if (choice === "Okay") chooseApp();
+    else {
+      bot("No stress 😄");
+      bot("I like honest people.");
+    }
+  });
 }
 
-// DAY
-function stepDay() {
-  ask("What kind of day has it been so far?", [
-    { text: "It’s good", next: dayGood },
-    { text: "It’s normal", next: dayNormal },
-    { text: "It’s bad", next: dayBad }
-  ]);
+async function chooseApp() {
+  await bot("Which app do you prefer?");
+  showButtons(["Instagram", "WhatsApp"], app => {
+    if (app === "Instagram") {
+      askInput("Write your Instagram ID here", () => {
+        bot("Alright 😄");
+        endChat();
+      });
+    }
+    if (app === "WhatsApp") {
+      askInput("Write your WhatsApp number here", () => {
+        bot("Alright 😄");
+        endChat();
+      });
+    }
+  });
 }
 
-function dayGood() {
-  bot("That’s good 😊\nWe just met — maybe that makes it even better.");
-  stepContinue();
+async function endChat() {
+  await bot("This was fun.");
+  await bot("Hope the rest of your day treats you nicely 💫");
 }
 
-function dayNormal() {
-  bot("Normal days are fine too.\nMaybe I can help make it a little better 🙂");
-  stepContinue();
-}
-
-function dayBad() {
-  bot("Oh… that’s not nice.\nI’ll try to make it a better day for you from now on.");
-  stepContinue();
-}
-
-// CONTINUE
-function stepContinue() {
-  ask("Should we continue this somewhere else?", [
-    { text: "Sure", next: choosePlatform }
-  ]);
-}
-
-function choosePlatform() {
-  ask("Where would you like to continue?", [
-    { text: "Instagram", next: () => contactInput("Instagram") },
-    { text: "WhatsApp", next: () => contactInput("WhatsApp") }
-  ]);
-}
 </script>
 
 </body>
 </html>
+
 
 
 
