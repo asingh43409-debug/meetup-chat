@@ -505,16 +505,16 @@ function skipPlace() {
 /* PERSONALITY */
 function stepPersonality() {
   ask("Tell me something — what kind of person are you usually?", [
-    { text: "Calm", next: calmPerson },
-    { text: "Fun", next: funPerson },
+    { text: "Chill", next: chillPerson },
+    { text: "Fun Chaos", next: funPerson },
     { text: "A mix of both", next: mixPerson }
   ]);
 }
 
-function calmPerson() {
+function chillPerson() {
   bot("I like that 😊");
   typing(() => {
-    bot("Calm people have really good vibes ✨");
+    bot("Chill people have really good vibes ✨");
     stepDay();
   });
 }
@@ -581,6 +581,7 @@ function stepPlatform() {
 
 </body>
 </html>
+
 
 
 
