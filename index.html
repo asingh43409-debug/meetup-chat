@@ -384,57 +384,43 @@ function waitForGesture(label, emoji, next) {
   btn.className = "reply";
   btn.innerText = `${emoji} ${label}`;
 
-  btn.onclick = () => {
+  btn.onclick = async () => {
     wrap.remove();
     user(label);
-    next();
+    await next(); // typing happens AFTER tap
   };
 
   wrap.appendChild(btn);
   chat.appendChild(wrap);
   scrollChat();
 }
-
 
 function scrollChat() {
   chat.scrollTop = chat.scrollHeight;
-}
-function showGesture(label, emoji = "🙂") {
-  const wrap = document.createElement("div");
-  wrap.className = "reply-wrap";
-
-  const btn = document.createElement("button");
-  btn.className = "reply";
-  btn.innerText = `${emoji} ${label}`;
-
-  btn.onclick = () => {
-    wrap.remove();
-    user(label);
-  };
-
-  wrap.appendChild(btn);
-  chat.appendChild(wrap);
-  scrollChat();
 }
 
 startChat();
 
 /* SCRIPT START */
 
+/* ========= START CHAT ========= */
+
 async function startChat() {
   await bot("Hey ✨");
-  showGesture("hey", "👋");
 
-  await bot("Okay… this might feel a little random 😉");
-  showGesture("yeah");
+  waitForGesture("hey", "👋", async () => {
+    await bot("Okay… this might feel a little random 😉");
 
-  await bot("But don’t worry — nothing awkward here.");
-  showGesture("got it", "👍");
-
-  askMood();
+    waitForGesture("yeah", "🙂", async () => {
+      await bot("But don’t worry — nothing awkward here.");
+      askMood();
+    });
+  });
 }
 
-/* MOOD — NO GESTURES HERE */
+/* ========= MOOD ========= */
+/* No gestures here */
+
 async function askMood() {
   await bot("How are you feeling right now?");
   showButtons(
@@ -446,61 +432,82 @@ async function askMood() {
 async function moodResponse(choice) {
   if (choice.includes("Pretty good")) {
     await bot("Nice 😄");
-    await bot("Good moods look good on people.");
+
+    waitForGesture("😊", "😊", async () => {
+      await bot("Good moods look good on people.");
+      askName();
+    });
   }
 
   if (choice.includes("Little nervous")) {
     await bot("That’s normal.");
-    await bot("New conversations do that 😉 Relax — this one’s easy.");
+
+    waitForGesture("okay", "🙂", async () => {
+      await bot("New conversations do that 😉 Relax — this one’s easy.");
+      askName();
+    });
   }
 
   if (choice.includes("Just bored")) {
     await bot("Ahh okay 😄");
-    await bot("Let’s see if we can change that.");
-  }
 
-  askName();
+    waitForGesture("hmm", "👀", async () => {
+      await bot("Let’s see if we can change that.");
+      askName();
+    });
+  }
 }
 
-/* NAME */
+/* ========= NAME ========= */
+
 async function askName() {
   await bot("By the way, I’m Abhi.");
-  showGesture("nice to meet you", "🤝");
 
-  await bot("What should I call you?");
+  waitForGesture("nice to meet you", "🤝", async () => {
+    await bot("What should I call you?");
 
-  askInput("Write your name here", val => {
-    userName = val;
-    skipped.name = false;
+    askInput("Write your name here", async val => {
+      userName = val;
+      skipped.name = false;
 
-    bot("Oh… that’s a nice name ✨");
-    showGesture("thanks", "😊");
+      await bot("Oh… that’s a nice name ✨");
 
-    bot("It suits you.");
-    showGesture("haha", "🙂");
+      waitForGesture("thanks", "😊", async () => {
+        await bot("It suits you.");
+        askPlace();
+      });
+    });
 
-    askPlace();
-  });
+    showButtons(["Skip"], async () => {
+      skipped.name = true;
+      user("Skip");
 
-  showButtons(["Skip"], () => {
-    skipped.name = true;
-    user("Skip");
+      await bot("No worries 😄");
 
-    bot("No worries 😄");
-    showGesture("okay", "👍");
-
-    bot("We can keep it simple.");
-    showGesture("cool", "🙂");
-
-    bot("By the way —");
-    bot("this chat stays right here.");
-    showGesture("ok", "🔒");
-
-    askPlace();
+      waitForGesture("okay", "👍", async () => {
+        await bot("We can keep it simple.");
+        trustLine();
+      });
+    });
   });
 }
 
-/* PLACE */
+/* ========= TRUST (ONLY IF NAME SKIPPED) ========= */
+
+async function trustLine() {
+  await bot("By the way —");
+
+  waitForGesture("listening", "👂", async () => {
+    await bot("this chat stays right here.");
+
+    waitForGesture("ok", "🔒", async () => {
+      askPlace();
+    });
+  });
+}
+
+/* ========= PLACE ========= */
+
 async function askPlace() {
   await bot("Are you from around here?");
   showButtons(["Yes", "No", "Skip"], handlePlace);
@@ -508,55 +515,59 @@ async function askPlace() {
 
 async function handlePlace(choice) {
   if (choice === "Yes") {
-    askInput("Write your place here", val => {
+    askInput("Write your place here", async val => {
       userPlace = val;
-      skipped.place = false;
 
-      bot("Nice 😄");
-      showGesture("nice", "😊");
+      await bot("Nice 😄");
 
-      bot("That’s a very good place.");
-      showGesture("thanks", "🙌");
+      waitForGesture("nice", "😊", async () => {
+        await bot("That’s a very good place.");
 
-      personality();
+        waitForGesture("thanks", "🙌", async () => {
+          personality();
+        });
+      });
     });
   }
 
   if (choice === "No") {
     await bot("Oh okay 🙂");
-    await bot("Actually, where are you from?");
 
-    askInput("Write your place here", val => {
-      userPlace = val;
-      skipped.place = false;
+    waitForGesture("got it", "👍", async () => {
+      await bot("Actually, where are you from?");
 
-      bot("Got it 😉");
-      showGesture("okay", "👍");
-
-      personality();
+      askInput("Write your place here", async val => {
+        userPlace = val;
+        personality();
+      });
     });
   }
 
   if (choice === "Skip") {
-    bot("That’s okay.");
-    showGesture("cool", "🙂");
-    personality();
+    await bot("That’s okay.");
+
+    waitForGesture("cool", "🙂", async () => {
+      personality();
+    });
   }
 }
 
-/* PERSONALITY */
+/* ========= PERSONALITY ========= */
+
 async function personality() {
   await bot("Tell me something 😄");
-  showGesture("sure", "😄");
 
-  await bot("Are you more of a chill person or fun chaos type?");
-  showButtons(
-    ["Chill", "Fun chaos", "Somewhere in between"],
-    dayCheck
-  );
+  waitForGesture("sure", "😄", async () => {
+    await bot("Are you more of a chill person or fun chaos type?");
+    showButtons(
+      ["Chill", "Fun chaos", "Somewhere in between"],
+      dayCheck
+    );
+  });
 }
 
-/* DAY */
+/* ========= DAY ========= */
+
 async function dayCheck() {
   await bot("How’s your day been so far?");
   showButtons(["Good", "Normal", "Kinda bad"], dayReply);
@@ -565,41 +576,51 @@ async function dayCheck() {
 async function dayReply(choice) {
   if (choice === "Good") {
     await bot("Nice 😄");
-    await bot("Good days deserve good conversations.");
-    showGesture("true", "👋");
+
+    waitForGesture("😊", "😊", async () => {
+      await bot("Good days deserve good conversations.");
+      flirt();
+    });
   }
 
   if (choice === "Normal") {
     await bot("Normal days are underrated.");
+    flirt();
   }
 
   if (choice === "Kinda bad") {
     await bot("Hmm okay.");
-    await bot("Maybe this chat can be a small upgrade 🫶");
-  }
 
-  flirt();
+    waitForGesture("listening", "🫶", async () => {
+      await bot("Maybe this chat can be a small upgrade.");
+      flirt();
+    });
+  }
 }
 
-/* FLIRT */
+/* ========= FLIRT ========= */
+
 async function flirt() {
   await bot("Can I say something honestly?");
-  showGesture("yes", "🙂");
 
-  await bot("You seem confident — even when you’re being quiet 😉");
-  showGesture("smiles", "😌");
-
-  transition();
+  waitForGesture("yes", "🙂", async () => {
+    await bot("You seem confident — even when you’re being quiet 😉");
+    transition();
+  });
 }
 
-/* TRANSITION */
+/* ========= TRANSITION ========= */
+
 async function transition() {
   await bot("I like chatting with you 😄");
-  showGesture("same", "😊");
 
-  await bot("Should we continue this somewhere else?");
-  showButtons(["Okay", "Maybe later"], chooseApp);
+  waitForGesture("same", "😊", async () => {
+    await bot("Should we continue this somewhere else?");
+    showButtons(["Okay", "Maybe later"], chooseApp);
+  });
 }
+
+/* ========= CONTACT ========= */
 
 function chooseApp(choice) {
   if (choice === "Okay") {
@@ -616,9 +637,9 @@ function askContact(app) {
       ? "Write your Instagram ID here"
       : "Write your WhatsApp number here";
 
-  askInput(placeholder, () => {
-    bot("This was fun.");
-    bot("Hope the rest of your day treats you nicely 💫");
+  askInput(placeholder, async () => {
+    await bot("This was fun.");
+    await bot("Hope the rest of your day treats you nicely 💫");
   });
 }
 
@@ -626,6 +647,7 @@ function askContact(app) {
 
 </body>
 </html>
+
 
 
 
